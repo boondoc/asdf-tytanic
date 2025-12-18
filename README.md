@@ -31,13 +31,13 @@ tytanic:
 
 ```shell
 # Show all installable versions
-asdf list-all tytanic
+asdf list all tytanic
 
 # Install specific version
 asdf install tytanic latest
 
 # Set a version globally (on your ~/.tool-versions file)
-asdf global tytanic latest
+asdf set -u tytanic latest
 
 # Now tytanic commands are available
 tt --version
