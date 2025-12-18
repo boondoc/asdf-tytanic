@@ -6,9 +6,21 @@ GH_REPO="https://github.com/typst-community/tytanic"
 TOOL_NAME="tytanic"
 TOOL_TEST="tt --version"
 
+TAGS_YANKED=(0.1.2 0.2.0)
+
 fail() {
 	echo -e "asdf-$TOOL_NAME: $*"
 	exit 1
+}
+
+tag_was_yanked() {
+	tag="$1"
+
+	for yanked in "${TAGS_YANKED[@]}"; do
+		[[ "$tag" = "$yanked" ]] && return
+	done
+
+	false
 }
 
 curl_opts=(-fsSL)
@@ -19,17 +31,21 @@ fi
 
 sort_versions() {
 	sed 'h; s/[+-]/./g; s/.p\([[:digit:]]\)/.z\1/; s/$/.z/; G; s/\n/ /' |
-		LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n | awk '{print $2}'
+		LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n |
+		awk '{print $2}'
 }
 
 list_github_tags() {
 	git ls-remote --tags --refs "$GH_REPO" |
-		grep -o 'refs/tags/.*' | cut -d/ -f3- |
+		grep -o 'refs/tags/.*' |
+		cut -d/ -f3- |
 		sed 's/^v//'
 }
 
 list_all_versions() {
-	list_github_tags
+	for tag in $(list_github_tags); do
+		tag_was_yanked "$tag" || echo "$tag"
+	done
 }
 
 download_release() {
@@ -39,6 +55,10 @@ download_release() {
 
 	if [ "$version" = "latest" ]; then
 		version=$(list_all_versions | sort_versions | grep -E "^[0-9]+\.[0-9]+\.[0-9]+$" | tail -n1 | xargs echo)
+	fi
+
+	if tag_was_yanked "$version"; then
+		fail "v$version has been withdrawn from distribution and cannot be installed"
 	fi
 
 	platform=$(uname -s | tr '[:upper:]' '[:lower:]')
