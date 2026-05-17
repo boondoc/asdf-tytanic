@@ -39,8 +39,12 @@ asdf install tytanic latest
 # Set a version globally (on your ~/.tool-versions file)
 asdf set -u tytanic latest
 
-# Now tytanic commands are available
+# Now tytanic is installed and available
+# Abbreviated name as distributed by the developers
 tt --version
+
+# Full name provided as an alias
+tytanic --version
 ```
 
 Check [asdf](https://github.com/asdf-vm/asdf) readme for more instructions on how to
